@@ -45,3 +45,6 @@ $RECYCLE.BIN/
 # Unity specific metadata
 *.unitypackage
 *.collab
+.collabignore
+
+UserSettings/
