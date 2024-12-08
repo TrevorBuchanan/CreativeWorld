@@ -1,4 +1,26 @@
+using System;
 using UnityEngine;
+
+// Axes are:
+//
+//      y
+//      |     z
+//      |   /
+//      | /
+//      +----- x
+
+// Vertex and edge layout:
+//
+//            6             7
+//            +-------------+               +-----6-------+   
+//          / |           / |             / |            /|   
+//        /   |         /   |          11   7         10   5
+//    2 +-----+-------+  3  |         +-----+2------+     |   
+//      |   4 +-------+-----+ 5       |     +-----4-+-----+   
+//      |   /         |   /           3   8         1   9
+//      | /           | /             | /           | /       
+//    0 +-------------+ 1             +------0------+         
+
 
 public static class MarchingCubes
 {
@@ -12,7 +34,7 @@ public static class MarchingCubes
     };
 
     // For each MC case, a mask of edge indices that need to be split
-    public static readonly int[] EdgeMasks = 
+    public static readonly int[] EdgeMasks =
     {
         0x0, 0x109, 0x203, 0x30a, 0x80c, 0x905, 0xa0f, 0xb06,
         0x406, 0x50f, 0x605, 0x70c, 0xc0a, 0xd03, 0xe09, 0xf00,
@@ -48,7 +70,7 @@ public static class MarchingCubes
         0xb06, 0xa0f, 0x905, 0x80c, 0x30a, 0x203, 0x109, 0x0,
     };
 
-        // For each MC case, a list of triangles, specified as triples of edge indices, terminated by -1
+    // For each MC case, a list of triangles, specified as triples of edge indices, terminated by -1
     public static readonly int[][] TriangleTable =
     {
         new int[] { -1 },
@@ -309,9 +331,61 @@ public static class MarchingCubes
         new int[] { -1 },
     };
 
-    public static Vector3 Interpolate(Vector3 p1, Vector3 p2, float valp1, float valp2)
+    public static Vector3 VertexInterpolate(Vector3 p1, Vector3 p2, float valp1, float valp2, float isoLevel)
     {
-        float t = Mathf.InverseLerp(valp1, valp2, 0f);
-        return Vector3.Lerp(p1, p2, t);
+        if (CheckLessUtil(p2, p1))
+        {
+            // Swap
+            Vector3 temp;
+            temp = p1;
+            p1 = p2;
+            p2 = temp;
+        }
+
+        Vector3 p;
+        if (Math.Abs(valp1 - valp2) > 0.00001)
+        {
+            p = p1 + (p2 - p1) / (valp2 - valp2) * (isoLevel - valp1);
+        }
+        else{
+            p = p1;
+        }
+        return p;
+    }
+
+    private static bool CheckLessUtil(Vector3 a, Vector3 b)
+    {
+        if (a.x < b.x)
+        {
+            return true;
+        }
+        else if (a.x > b.x)
+        {
+            return false;
+        }
+
+        if (a.y < b.y)
+        {
+            return true;
+        }
+        else if (a.y > b.y)
+        {
+            return false;
+        }
+
+        if (a.z < b.z)
+        {
+            return true;
+        }
+        else if (a.z > b.z)
+        {
+            return false;
+        }
+
+        return false;
+        // Simpler but hard to read
+        // return (a.x < b.x) || 
+        //     (a.x == b.x && a.y < b.y) || 
+        //     (a.x == b.x && a.y == b.y && a.z < b.z);
     }
 }

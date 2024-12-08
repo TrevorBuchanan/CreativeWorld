@@ -7,7 +7,7 @@ public class NoiseGenerator3D
     public float Frequency = 0.1f; // How "stretched" the noise is
     public float Amplitude = 0.9f; // Intensity of the noise
     public Vector3 Offset = Vector3.zero; // Offset for the noise, useful for scrolling
-    public int Seed = 0;
+    public int Seed = 1;
     
     /// <summary>
     /// Generates 3D Perlin Noise for a given point.

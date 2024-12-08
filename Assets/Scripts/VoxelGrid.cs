@@ -3,19 +3,21 @@ using UnityEngine;
 public class VoxelGrid
 {
     public float[,,] values; // 3D array to store scalar values
+    private NoiseGenerator3D noiseGenerator3D = new NoiseGenerator3D();
+    private NoiseGenerator2D noiseGenerator2D = new NoiseGenerator2D();
 
     public VoxelGrid(int width, int height, int depth)
     {
-        values = new float[width, height, depth];
+        values = new float[width + 1, height + 1, depth + 1];
 
         // Initialize the voxel grid with some values
-        for (int x = 0; x < width; x++)
+        for (int x = 0; x < width + 1; x++)
         {
-            for (int y = 0; y < height; y++)
+            for (int y = 0; y < height + 1; y++)
             {
-                for (int z = 0; z < depth; z++)
+                for (int z = 0; z < depth + 1; z++)
                 {
-                    values[x, y, z] = Mathf.PerlinNoise(x * 0.1f, z * 0.1f); // Use Perlin noise for terrain generation
+                    values[x, y, z] = noiseGenerator3D.GeneratePerlin(x, y, z);
                 }
             }
         }

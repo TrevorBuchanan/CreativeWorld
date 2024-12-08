@@ -37,40 +37,51 @@ public class Chunk
 
                     // Determine the cube index (based on 8 corner values)
                     int cubeIndex = 0;
-                    for (int i = 0; i < 8; i++)
-                    {
-                        if (cornerValues[i] < isoLevel)
-                        {
-                            cubeIndex |= (1 << i);
-                        }
-                    }
+                    // for (int i = 0; i < 8; i++)
+                    // {
+                    //     if (cornerValues[i] < isoLevel)
+                    //     {
+                    //         cubeIndex |= 1 << i;
+                    //     }
+                    // }
+                    // Same but easier to read
+                    if (cornerValues[0] < isoLevel) cubeIndex |= 1;
+                    if (cornerValues[1] < isoLevel) cubeIndex |= 2;
+                    if (cornerValues[2] < isoLevel) cubeIndex |= 4;
+                    if (cornerValues[3] < isoLevel) cubeIndex |= 8;
+                    if (cornerValues[4] < isoLevel) cubeIndex |= 16;
+                    if (cornerValues[5] < isoLevel) cubeIndex |= 32;
+                    if (cornerValues[6] < isoLevel) cubeIndex |= 64;
+                    if (cornerValues[7] < isoLevel) cubeIndex |= 128;
 
                     // Use the triangle table to generate the triangles
-                    var test = MarchingCubes.TriangleTable;
                     int[] edges = MarchingCubes.TriangleTable[cubeIndex];
                     if (edges[0] != -1) // Skip empty cubes
                     {
                         for (int i = 0; edges[i] != -1; i += 3)
                         {
-                            Vector3 v1 = MarchingCubes.Interpolate(
+                            Vector3 v1 = MarchingCubes.VertexInterpolate(
                                 GetCubeCorner(x, y, z, MarchingCubes.EdgeVertexIndices[edges[i], 0]),
                                 GetCubeCorner(x, y, z, MarchingCubes.EdgeVertexIndices[edges[i + 1], 0]),
                                 cornerValues[MarchingCubes.EdgeVertexIndices[edges[i], 0]],
-                                cornerValues[MarchingCubes.EdgeVertexIndices[edges[i + 1], 0]]
+                                cornerValues[MarchingCubes.EdgeVertexIndices[edges[i + 1], 0]],
+                                isoLevel
                             );
 
-                            Vector3 v2 = MarchingCubes.Interpolate(
+                            Vector3 v2 = MarchingCubes.VertexInterpolate(
                                 GetCubeCorner(x, y, z, MarchingCubes.EdgeVertexIndices[edges[i + 1], 0]),
                                 GetCubeCorner(x, y, z, MarchingCubes.EdgeVertexIndices[edges[i + 2], 0]),
                                 cornerValues[MarchingCubes.EdgeVertexIndices[edges[i + 1], 0]],
-                                cornerValues[MarchingCubes.EdgeVertexIndices[edges[i + 2], 0]]
+                                cornerValues[MarchingCubes.EdgeVertexIndices[edges[i + 2], 0]],
+                                isoLevel
                             );
 
-                            Vector3 v3 = MarchingCubes.Interpolate(
+                            Vector3 v3 = MarchingCubes.VertexInterpolate(
                                 GetCubeCorner(x, y, z, MarchingCubes.EdgeVertexIndices[edges[i + 2], 0]),
                                 GetCubeCorner(x, y, z, MarchingCubes.EdgeVertexIndices[edges[i], 0]),
                                 cornerValues[MarchingCubes.EdgeVertexIndices[edges[i + 2], 0]],
-                                cornerValues[MarchingCubes.EdgeVertexIndices[edges[i], 0]]
+                                cornerValues[MarchingCubes.EdgeVertexIndices[edges[i], 0]],
+                                isoLevel
                             );
 
                             vertices.Add(v1);

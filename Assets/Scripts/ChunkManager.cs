@@ -2,9 +2,13 @@ using UnityEngine;
 
 public class ChunkManager : MonoBehaviour
 {
-    public int chunkWidth = 16;
-    public int chunkHeight = 16;
-    public int chunkDepth = 16;
+    public GameObject spherePrefab;  // TEMP -> TODO: REMOVE
+    public Color StartColor = Color.black;  // TEMP -> TODO: REMOVE
+    public Color EndColor = Color.white;  // TEMP -> TODO: REMOVE
+
+    public int chunkWidth = 1;
+    public int chunkHeight = 1;
+    public int chunkDepth = 1;
     public float isoLevel = 0.5f;
 
     private Chunk chunk;
@@ -13,6 +17,33 @@ public class ChunkManager : MonoBehaviour
     {
         // Create and generate the chunk mesh
         chunk = new Chunk(chunkWidth, chunkHeight, chunkDepth);
+
+
+        // TEMP -> TODO: REMOVE ____________________________________________
+        for (int x = 0; x < chunkWidth + 1; x++)
+        {
+            for (int y = 0; y < chunkHeight + 1; y++)
+            {
+                for (int z = 0; z < chunkDepth + 1; z++)
+                {
+                    
+                    float noiseValue = chunk.voxelGrid.values[x, y, z];
+                    Vector3 position = new Vector3(x, y, z);
+
+                    GameObject sphere = Instantiate(spherePrefab, position, Quaternion.identity);
+                    sphere.transform.localScale = Vector3.one * 0.1f;
+
+                    Renderer sphereRenderer = sphere.GetComponent<Renderer>();
+                    if (sphereRenderer != null)
+                    {
+                        if (noiseValue > isoLevel) sphereRenderer.material.color = EndColor;
+                        else sphereRenderer.material.color = StartColor;
+                    }
+                }
+            }
+        }
+        // TEMP -> TODO: REMOVE ____________________________________________
+
         chunk.GenerateMesh(isoLevel);
 
         // Assign the generated mesh to the MeshFilter component
