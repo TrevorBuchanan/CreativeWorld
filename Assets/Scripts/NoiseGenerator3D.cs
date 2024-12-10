@@ -7,7 +7,11 @@ public class NoiseGenerator3D
     public float Frequency = 0.1f; // How "stretched" the noise is
     public float Amplitude = 0.9f; // Intensity of the noise
     public Vector3 Offset = Vector3.zero; // Offset for the noise, useful for scrolling
-    public int Seed = 1;
+    private int seed;
+
+    public NoiseGenerator3D(int seed) {
+        this.seed = seed;
+    }
     
     /// <summary>
     /// Generates 3D Perlin Noise for a given point.
@@ -15,7 +19,7 @@ public class NoiseGenerator3D
     public float GeneratePerlin(float x, float y, float z)
     {
         // Use the seed to create an offset that's consistent across calls
-        Vector3 seededOffset = Offset + new Vector3(Seed, Seed, Seed);
+        Vector3 seededOffset = Offset + new Vector3(seed, seed, seed);
 
         // Scale coordinates by Frequency and add the deterministic Offset
         float xy = Mathf.PerlinNoise((x * Frequency + seededOffset.x), (y * Frequency + seededOffset.y));

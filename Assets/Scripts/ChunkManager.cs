@@ -2,9 +2,9 @@ using UnityEngine;
 
 public class ChunkManager : MonoBehaviour
 {
-    public GameObject spherePrefab;  // TEMP -> TODO: REMOVE
-    public Color StartColor = Color.black;  // TEMP -> TODO: REMOVE
-    public Color EndColor = Color.white;  // TEMP -> TODO: REMOVE
+    public GameObject spherePrefab;  // TODO: REMOVE
+    public Color StartColor = Color.black;  // TODO: REMOVE
+    public Color EndColor = Color.white;  // TODO: REMOVE
 
     public int chunkWidth = 1;
     public int chunkHeight = 1;
@@ -19,7 +19,7 @@ public class ChunkManager : MonoBehaviour
         chunk = new Chunk(chunkWidth, chunkHeight, chunkDepth);
 
 
-        // TEMP -> TODO: REMOVE ____________________________________________
+        // TODO: REMOVE ____________________________________________
         for (int x = 0; x < chunkWidth + 1; x++)
         {
             for (int y = 0; y < chunkHeight + 1; y++)
@@ -42,7 +42,7 @@ public class ChunkManager : MonoBehaviour
                 }
             }
         }
-        // TEMP -> TODO: REMOVE ____________________________________________
+        // TODO: REMOVE ____________________________________________
 
         chunk.GenerateMesh(isoLevel);
 

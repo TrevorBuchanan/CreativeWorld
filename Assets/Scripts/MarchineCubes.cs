@@ -1,6 +1,8 @@
 using System;
 using UnityEngine;
 
+// Tables credit: https://gist.github.com/dwilliamson/c041e3454a713e58baf6e4f8e5fffecd
+
 // Axes are:
 //
 //      y
@@ -345,7 +347,7 @@ public static class MarchingCubes
         Vector3 p;
         if (Math.Abs(valp1 - valp2) > 0.00001)
         {
-            p = p1 + (p2 - p1) / (valp2 - valp2) * (isoLevel - valp1);
+            p = p1 + (p2 - p1) / (valp2 - valp1) * (isoLevel - valp1);
         }
         else{
             p = p1;

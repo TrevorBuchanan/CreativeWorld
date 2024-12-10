@@ -31,7 +31,7 @@ public class Chunk
                     // Get the scalar values at each corner of the cube
                     for (int i = 0; i < 8; i++)
                     {
-                        Vector3 cornerPos = GetCubeCorner(x, y, z, i);
+                        Vector3 cornerPos = GetCubeCornerPos(x, y, z, i);
                         cornerValues[i] = voxelGrid.GetValue((int)cornerPos.x, (int)cornerPos.y, (int)cornerPos.z);
                     }
 
@@ -55,32 +55,39 @@ public class Chunk
                     if (cornerValues[7] < isoLevel) cubeIndex |= 128;
 
                     // Use the triangle table to generate the triangles
+                    int vertex1_index, vertex2_index;
                     int[] edges = MarchingCubes.TriangleTable[cubeIndex];
                     if (edges[0] != -1) // Skip empty cubes
                     {
                         for (int i = 0; edges[i] != -1; i += 3)
                         {
+                            vertex1_index = MarchingCubes.EdgeVertexIndices[edges[i], 0];
+                            vertex2_index =  MarchingCubes.EdgeVertexIndices[edges[i], 1];
                             Vector3 v1 = MarchingCubes.VertexInterpolate(
-                                GetCubeCorner(x, y, z, MarchingCubes.EdgeVertexIndices[edges[i], 0]),
-                                GetCubeCorner(x, y, z, MarchingCubes.EdgeVertexIndices[edges[i + 1], 0]),
-                                cornerValues[MarchingCubes.EdgeVertexIndices[edges[i], 0]],
-                                cornerValues[MarchingCubes.EdgeVertexIndices[edges[i + 1], 0]],
+                                GetCubeCornerPos(x, y, z, vertex1_index),
+                                GetCubeCornerPos(x, y, z, vertex2_index),
+                                cornerValues[vertex1_index],
+                                cornerValues[vertex2_index],
                                 isoLevel
                             );
 
+                            vertex1_index = MarchingCubes.EdgeVertexIndices[edges[i + 1], 0];
+                            vertex2_index =  MarchingCubes.EdgeVertexIndices[edges[i + 1], 1];
                             Vector3 v2 = MarchingCubes.VertexInterpolate(
-                                GetCubeCorner(x, y, z, MarchingCubes.EdgeVertexIndices[edges[i + 1], 0]),
-                                GetCubeCorner(x, y, z, MarchingCubes.EdgeVertexIndices[edges[i + 2], 0]),
-                                cornerValues[MarchingCubes.EdgeVertexIndices[edges[i + 1], 0]],
-                                cornerValues[MarchingCubes.EdgeVertexIndices[edges[i + 2], 0]],
+                                GetCubeCornerPos(x, y, z, vertex1_index),
+                                GetCubeCornerPos(x, y, z, vertex2_index),
+                                cornerValues[vertex1_index],
+                                cornerValues[vertex2_index],
                                 isoLevel
                             );
 
+                            vertex1_index = MarchingCubes.EdgeVertexIndices[edges[i + 2], 0];
+                            vertex2_index =  MarchingCubes.EdgeVertexIndices[edges[i + 2], 1];
                             Vector3 v3 = MarchingCubes.VertexInterpolate(
-                                GetCubeCorner(x, y, z, MarchingCubes.EdgeVertexIndices[edges[i + 2], 0]),
-                                GetCubeCorner(x, y, z, MarchingCubes.EdgeVertexIndices[edges[i], 0]),
-                                cornerValues[MarchingCubes.EdgeVertexIndices[edges[i + 2], 0]],
-                                cornerValues[MarchingCubes.EdgeVertexIndices[edges[i], 0]],
+                                GetCubeCornerPos(x, y, z, vertex1_index),
+                                GetCubeCornerPos(x, y, z, vertex2_index),
+                                cornerValues[vertex1_index],
+                                cornerValues[vertex2_index],
                                 isoLevel
                             );
 
@@ -103,11 +110,11 @@ public class Chunk
     }
 
     // Get the position of a cube corner based on its index (0-7)
-    private Vector3 GetCubeCorner(int x, int y, int z, int cornerIndex)
+    private Vector3 GetCubeCornerPos(int x, int y, int z, int cornerIndex)
     {
         Vector3[] cornerOffsets = {
-            new Vector3(0, 0, 0), new Vector3(1, 0, 0), new Vector3(1, 0, 1), new Vector3(0, 0, 1),
-            new Vector3(0, 1, 0), new Vector3(1, 1, 0), new Vector3(1, 1, 1), new Vector3(0, 1, 1)
+            new Vector3(0, 0, 0), new Vector3(1, 0, 0), new Vector3(0, 1, 0), new Vector3(1, 1, 0),
+            new Vector3(0, 0, 1), new Vector3(1, 0, 1), new Vector3(0, 1, 1), new Vector3(1, 1, 1)
         };
         return new Vector3(x, y, z) + cornerOffsets[cornerIndex];
     }

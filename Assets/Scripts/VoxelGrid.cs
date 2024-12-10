@@ -3,8 +3,9 @@ using UnityEngine;
 public class VoxelGrid
 {
     public float[,,] values; // 3D array to store scalar values
-    private NoiseGenerator3D noiseGenerator3D = new NoiseGenerator3D();
-    private NoiseGenerator2D noiseGenerator2D = new NoiseGenerator2D();
+    public static int Seed = 0; // FIXME: Seed doesn't work like it should
+    private NoiseGenerator3D noiseGenerator3D = new NoiseGenerator3D(Seed);
+    private NoiseGenerator2D noiseGenerator2D = new NoiseGenerator2D(Seed);
 
     public VoxelGrid(int width, int height, int depth)
     {
@@ -18,9 +19,20 @@ public class VoxelGrid
                 for (int z = 0; z < depth + 1; z++)
                 {
                     values[x, y, z] = noiseGenerator3D.GeneratePerlin(x, y, z);
+                    Debug.Log(values[x, y, z]);
                 }
             }
         }
+
+        // FIXME: REMOVE
+        // values[0, 0, 0] = 0.0f;
+        // values[0, 0, 1] = 1.0f;
+        // values[0, 1, 0] = 1.0f;
+        // values[0, 1, 1] = 1.0f;
+        // values[1, 0, 0] = 1.0f;
+        // values[1, 0, 1] = 1.0f;
+        // values[1, 1, 0] = 1.0f;
+        // values[1, 1, 1] = 1.0f;
     }
 
     // Get the value at a specific position (with bounds checking)

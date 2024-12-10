@@ -5,6 +5,11 @@ public class NoiseGenerator2D
     public float Frequency = 1.0f; // Scale of the noise pattern
     public float Amplitude = 1.0f; // Intensity of the noise
     public Vector2 Offset = Vector2.zero; // Offset to shift the noise (useful for scrolling or positioning)
+    private int seed;
+
+    public NoiseGenerator2D(int seed) {
+        this.seed = seed;
+    }
 
     /// <summary>
     /// Generates 2D Perlin Noise for a given point.
