@@ -7,7 +7,7 @@ public class NoiseGenerator3D
     public float Frequency = 0.1f; // How "stretched" the noise is
     public float Amplitude = 0.9f; // Intensity of the noise
     public Vector3 Offset = Vector3.zero; // Offset for the noise, useful for scrolling
-    private int seed;
+    private int seed; // FIXME: Fix seed affect on noise generation (maybe something other than just offset)
 
     public NoiseGenerator3D(int seed) {
         this.seed = seed;
