@@ -170,9 +170,9 @@ MonoBehaviour:
   spherePrefab: {fileID: 9096323865463814117, guid: 4d6c91725f6b24601afaa7f58192b8a3, type: 3}
   StartColor: {r: 0.18525784, g: 0, b: 0.8117647, a: 1}
   EndColor: {r: 0, g: 0.84622765, b: 1, a: 1}
-  chunkWidth: 1
-  chunkHeight: 1
-  chunkDepth: 1
+  chunkWidth: 4
+  chunkHeight: 4
+  chunkDepth: 4
   isoLevel: 0.43
 --- !u!1 &705507993
 GameObject:
