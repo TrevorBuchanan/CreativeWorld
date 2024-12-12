@@ -1,29 +1,45 @@
+using System;
 using System.Collections.Generic;
+using System.Transactions;
 using UnityEngine;
 
-public class Chunk
+public class Chunk : MonoBehaviour
 {
-    public VoxelGrid voxelGrid;
-    public Mesh chunkMesh;
+    // FIXME: Breaks at certain sizes
+    public static int Size = 23;
+    public static int Divisions = 1;
+    public VoxelGrid VoxelGrid;
+    public static float IsoLevel = 0.43f;
+    private Mesh chunkMesh;
 
-    public Chunk(int width, int height, int depth)
+    void Start()
     {
-        voxelGrid = new VoxelGrid(width, height, depth);
-        chunkMesh = new Mesh();
+        VoxelGrid = new VoxelGrid(transform.position, Size, Size, Size, Divisions);
+        // Create and generate the chunk mesh
+        GenerateMesh();
+
+        // Assign the generated mesh to the MeshFilter component
+        MeshFilter meshFilter = gameObject.AddComponent<MeshFilter>();
+        meshFilter.mesh = chunkMesh;
+
+        // Optionally, assign a MeshRenderer if you want it to be visible
+        MeshRenderer meshRenderer = gameObject.AddComponent<MeshRenderer>();
+        meshRenderer.material = new Material(Shader.Find("Standard"));
     }
 
     // Generate the mesh for the chunk using Marching Cubes
-    public void GenerateMesh(float isoLevel)
+    public void GenerateMesh()
     {
+        chunkMesh = new Mesh();
         List<Vector3> vertices = new List<Vector3>();
         List<int> triangles = new List<int>();
 
         // Iterate through each cube in the chunk
-        for (int x = 0; x < voxelGrid.values.GetLength(0) - 1; x++)
+        for (int x = 0; x < VoxelGrid.values.GetLength(0) - 1; x++)
         {
-            for (int y = 0; y < voxelGrid.values.GetLength(1) - 1; y++)
+            for (int y = 0; y < VoxelGrid.values.GetLength(1) - 1; y++)
             {
-                for (int z = 0; z < voxelGrid.values.GetLength(2) - 1; z++)
+                for (int z = 0; z < VoxelGrid.values.GetLength(2) - 1; z++)
                 {
                     // Define an array to hold the corner values (scalar field values at each corner)
                     float[] cornerValues = new float[8];
@@ -32,27 +48,19 @@ public class Chunk
                     for (int i = 0; i < 8; i++)
                     {
                         Vector3 cornerPos = GetCubeCornerPos(x, y, z, i);
-                        cornerValues[i] = voxelGrid.GetValue((int)cornerPos.x, (int)cornerPos.y, (int)cornerPos.z);
+                        cornerValues[i] = VoxelGrid.GetValue((int)cornerPos.x, (int)cornerPos.y, (int)cornerPos.z);
                     }
 
                     // Determine the cube index (based on 8 corner values)
                     int cubeIndex = 0;
-                    // for (int i = 0; i < 8; i++)
-                    // {
-                    //     if (cornerValues[i] < isoLevel)
-                    //     {
-                    //         cubeIndex |= 1 << i;
-                    //     }
-                    // }
-                    // Same but easier to read
-                    if (cornerValues[0] < isoLevel) cubeIndex |= 1;
-                    if (cornerValues[1] < isoLevel) cubeIndex |= 2;
-                    if (cornerValues[2] < isoLevel) cubeIndex |= 4;
-                    if (cornerValues[3] < isoLevel) cubeIndex |= 8;
-                    if (cornerValues[4] < isoLevel) cubeIndex |= 16;
-                    if (cornerValues[5] < isoLevel) cubeIndex |= 32;
-                    if (cornerValues[6] < isoLevel) cubeIndex |= 64;
-                    if (cornerValues[7] < isoLevel) cubeIndex |= 128;
+                    if (cornerValues[0] < IsoLevel) cubeIndex |= 1;
+                    if (cornerValues[1] < IsoLevel) cubeIndex |= 2;
+                    if (cornerValues[2] < IsoLevel) cubeIndex |= 4;
+                    if (cornerValues[3] < IsoLevel) cubeIndex |= 8;
+                    if (cornerValues[4] < IsoLevel) cubeIndex |= 16;
+                    if (cornerValues[5] < IsoLevel) cubeIndex |= 32;
+                    if (cornerValues[6] < IsoLevel) cubeIndex |= 64;
+                    if (cornerValues[7] < IsoLevel) cubeIndex |= 128;
 
                     // Use the triangle table to generate the triangles
                     int vertex1_index, vertex2_index;
@@ -68,7 +76,7 @@ public class Chunk
                                 GetCubeCornerPos(x, y, z, vertex2_index),
                                 cornerValues[vertex1_index],
                                 cornerValues[vertex2_index],
-                                isoLevel
+                                IsoLevel
                             );
 
                             vertex1_index = MarchingCubes.EdgeVertexIndices[edges[i + 1], 0];
@@ -78,7 +86,7 @@ public class Chunk
                                 GetCubeCornerPos(x, y, z, vertex2_index),
                                 cornerValues[vertex1_index],
                                 cornerValues[vertex2_index],
-                                isoLevel
+                                IsoLevel
                             );
 
                             vertex1_index = MarchingCubes.EdgeVertexIndices[edges[i + 2], 0];
@@ -88,12 +96,12 @@ public class Chunk
                                 GetCubeCornerPos(x, y, z, vertex2_index),
                                 cornerValues[vertex1_index],
                                 cornerValues[vertex2_index],
-                                isoLevel
+                                IsoLevel
                             );
 
-                            vertices.Add(v1);
-                            vertices.Add(v2);
-                            vertices.Add(v3);
+                            vertices.Add(v1 / (Divisions + 1)); // + 1 because number of segments
+                            vertices.Add(v2 / (Divisions + 1));
+                            vertices.Add(v3 / (Divisions + 1));
                             triangles.Add(vertices.Count - 3);
                             triangles.Add(vertices.Count - 2);
                             triangles.Add(vertices.Count - 1);
