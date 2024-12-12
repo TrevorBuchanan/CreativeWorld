@@ -333,61 +333,34 @@ public static class MarchingCubes
         new int[] { -1 },
     };
 
-    public static Vector3 VertexInterpolate(Vector3 p1, Vector3 p2, float valp1, float valp2, float isoLevel)
+    // Option for taking the midpoint rather than actually interpolating
+    // public static Vector3 VertexInterpolate(Vector3 p1, Vector3 p2, float valp1, float valp2, float isoLevel) {
+    //     Vector3 p = new Vector3((p1.x + p2.x) / 2, (p1.y + p2.y) / 2, (p1.z + p2.z) / 2);
+    //     return p;
+    // }
+
+    public static Vector3 VertexInterpolate(Vector3 p1, Vector3 p2, float value1, float value2, float isoLevel)
     {
-        if (CheckLessUtil(p2, p1))
+        if (IsFirstPointLessThan(p2, p1))
         {
-            // Swap
-            Vector3 temp;
-            temp = p1;
-            p1 = p2;
-            p2 = temp;
+            (p1, p2) = (p2, p1);
+            (value1, value2) = (value2, value1);
         }
 
-        Vector3 p;
-        if (Math.Abs(valp1 - valp2) > 0.00001)
+        // Avoid division by zero with a small epsilon
+        if (Math.Abs(value2 - value1) < float.Epsilon)
         {
-            p = p1 + (p2 - p1) / (valp2 - valp1) * (isoLevel - valp1);
+            return p1;
         }
-        else{
-            p = p1;
-        }
-        return p;
+
+        return p1 + (p2 - p1) * ((isoLevel - value1) / (value2 - value1));
     }
 
-    private static bool CheckLessUtil(Vector3 a, Vector3 b)
+
+    private static bool IsFirstPointLessThan(Vector3 a, Vector3 b)
     {
-        if (a.x < b.x)
-        {
-            return true;
-        }
-        else if (a.x > b.x)
-        {
-            return false;
-        }
-
-        if (a.y < b.y)
-        {
-            return true;
-        }
-        else if (a.y > b.y)
-        {
-            return false;
-        }
-
-        if (a.z < b.z)
-        {
-            return true;
-        }
-        else if (a.z > b.z)
-        {
-            return false;
-        }
-
-        return false;
-        // Simpler but hard to read
-        // return (a.x < b.x) || 
-        //     (a.x == b.x && a.y < b.y) || 
-        //     (a.x == b.x && a.y == b.y && a.z < b.z);
+        return (a.x < b.x) ||
+            (a.x == b.x && a.y < b.y) ||
+            (a.x == b.x && a.y == b.y && a.z < b.z);
     }
 }
