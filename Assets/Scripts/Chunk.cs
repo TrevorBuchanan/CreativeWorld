@@ -6,9 +6,8 @@ using UnityEngine;
 
 public class Chunk : MonoBehaviour
 {
-    // FIXME: Breaks at certain sizes
     public static int Size = 16;
-    public static int Divisions = 1;
+    public static int Divisions = 3;
     public VoxelGrid VoxelGrid;
     public static float IsoLevel = 0.43f;
     private Mesh chunkMesh;
@@ -35,6 +34,9 @@ public class Chunk : MonoBehaviour
         List<Vector3> vertices = new List<Vector3>();
         List<int> triangles = new List<int>();
 
+        // Dictionary to store unique vertices and their indices
+        Dictionary<Vector3, int> uniqueVertices = new Dictionary<Vector3, int>();
+
         int sections = Divisions + 1;
 
         // Iterate through each cube in the chunk
@@ -44,7 +46,6 @@ public class Chunk : MonoBehaviour
             {
                 for (int z = 0; z < Size * sections; z++)
                 {
-                    // Define an array to hold the corner values (scalar field values at each corner)
                     float[] cornerValues = new float[8];
 
                     // Get the scalar values at each corner of the cube
@@ -54,7 +55,6 @@ public class Chunk : MonoBehaviour
                         cornerValues[i] = VoxelGrid.GetValue((int)cornerPos.x, (int)cornerPos.y, (int)cornerPos.z);
                     }
 
-                    // Determine the cube index (based on 8 corner values)
                     int cubeIndex = 0;
                     if (cornerValues[0] < IsoLevel) cubeIndex |= 1;
                     if (cornerValues[1] < IsoLevel) cubeIndex |= 2;
@@ -65,59 +65,48 @@ public class Chunk : MonoBehaviour
                     if (cornerValues[6] < IsoLevel) cubeIndex |= 64;
                     if (cornerValues[7] < IsoLevel) cubeIndex |= 128;
 
-                    // Use the triangle table to generate the triangles
-                    int vertex1_index, vertex2_index;
                     int[] edges = MarchingCubes.TriangleTable[cubeIndex];
-                    if (edges[0] != -1) // Skip empty cubes
+                    if (edges[0] != -1)
                     {
                         for (int i = 0; edges[i] != -1; i += 3)
                         {
-                            vertex1_index = MarchingCubes.EdgeVertexIndices[edges[i], 0];
-                            vertex2_index =  MarchingCubes.EdgeVertexIndices[edges[i], 1];
-                            Vector3 v1 = MarchingCubes.VertexInterpolate(
-                                GetCubeCornerPos(x, y, z, vertex1_index),
-                                GetCubeCornerPos(x, y, z, vertex2_index),
-                                cornerValues[vertex1_index],
-                                cornerValues[vertex2_index],
-                                IsoLevel
-                            );
+                            int[] edgeIndices = { edges[i], edges[i + 1], edges[i + 2] };
+                            foreach (int edgeIndex in edgeIndices)
+                            {
+                                int vertex1_index = MarchingCubes.EdgeVertexIndices[edgeIndex, 0];
+                                int vertex2_index = MarchingCubes.EdgeVertexIndices[edgeIndex, 1];
+                                Vector3 interpolatedVertex = MarchingCubes.VertexInterpolate(
+                                    GetCubeCornerPos(x, y, z, vertex1_index),
+                                    GetCubeCornerPos(x, y, z, vertex2_index),
+                                    cornerValues[vertex1_index],
+                                    cornerValues[vertex2_index],
+                                    IsoLevel
+                                );
 
-                            vertex1_index = MarchingCubes.EdgeVertexIndices[edges[i + 1], 0];
-                            vertex2_index =  MarchingCubes.EdgeVertexIndices[edges[i + 1], 1];
-                            Vector3 v2 = MarchingCubes.VertexInterpolate(
-                                GetCubeCornerPos(x, y, z, vertex1_index),
-                                GetCubeCornerPos(x, y, z, vertex2_index),
-                                cornerValues[vertex1_index],
-                                cornerValues[vertex2_index],
-                                IsoLevel
-                            );
+                                // Normalize to chunk scale
+                                interpolatedVertex /= (Divisions + 1);
 
-                            vertex1_index = MarchingCubes.EdgeVertexIndices[edges[i + 2], 0];
-                            vertex2_index =  MarchingCubes.EdgeVertexIndices[edges[i + 2], 1];
-                            Vector3 v3 = MarchingCubes.VertexInterpolate(
-                                GetCubeCornerPos(x, y, z, vertex1_index),
-                                GetCubeCornerPos(x, y, z, vertex2_index),
-                                cornerValues[vertex1_index],
-                                cornerValues[vertex2_index],
-                                IsoLevel
-                            );
+                                // Add vertex or reuse existing one
+                                if (!uniqueVertices.TryGetValue(interpolatedVertex, out int vertexIndex))
+                                {
+                                    vertexIndex = vertices.Count;
+                                    uniqueVertices[interpolatedVertex] = vertexIndex;
+                                    vertices.Add(interpolatedVertex);
+                                }
 
-                            vertices.Add(v1 / (Divisions + 1)); // + 1 because number of segments
-                            vertices.Add(v2 / (Divisions + 1));
-                            vertices.Add(v3 / (Divisions + 1));
-                            triangles.Add(vertices.Count - 3);
-                            triangles.Add(vertices.Count - 2);
-                            triangles.Add(vertices.Count - 1);
+                                triangles.Add(vertexIndex);
+                            }
                         }
                     }
                 }
             }
         }
+
         if (vertices.Count > 65535)
         {
             Debug.LogError($"Vertex count exceeds Unity's mesh limit of 65535 at {vertices.Count}.");
         }
-        Debug.Log($"Vertex count at {vertices.Count}.");
+        Debug.Log($"Vertex count after deduplication: {vertices.Count}.");
 
         chunkMesh.Clear();
         chunkMesh.vertices = vertices.ToArray();
