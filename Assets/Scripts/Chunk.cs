@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Transactions;
 using UnityEngine;
 
 public class Chunk : MonoBehaviour
 {
     // FIXME: Breaks at certain sizes
-    public static int Size = 23;
+    public static int Size = 16;
     public static int Divisions = 1;
     public VoxelGrid VoxelGrid;
     public static float IsoLevel = 0.43f;
@@ -34,12 +35,14 @@ public class Chunk : MonoBehaviour
         List<Vector3> vertices = new List<Vector3>();
         List<int> triangles = new List<int>();
 
+        int sections = Divisions + 1;
+
         // Iterate through each cube in the chunk
-        for (int x = 0; x < VoxelGrid.values.GetLength(0) - 1; x++)
+        for (int x = 0; x < Size * sections; x++)
         {
-            for (int y = 0; y < VoxelGrid.values.GetLength(1) - 1; y++)
+            for (int y = 0; y < Size * sections; y++)
             {
-                for (int z = 0; z < VoxelGrid.values.GetLength(2) - 1; z++)
+                for (int z = 0; z < Size * sections; z++)
                 {
                     // Define an array to hold the corner values (scalar field values at each corner)
                     float[] cornerValues = new float[8];
@@ -110,6 +113,11 @@ public class Chunk : MonoBehaviour
                 }
             }
         }
+        if (vertices.Count > 65535)
+        {
+            Debug.LogError($"Vertex count exceeds Unity's mesh limit of 65535 at {vertices.Count}.");
+        }
+        Debug.Log($"Vertex count at {vertices.Count}.");
 
         chunkMesh.Clear();
         chunkMesh.vertices = vertices.ToArray();
