@@ -1,0 +1,24 @@
+#pragma kernel CSMain
+
+// Output buffer for vertex positions
+RWStructuredBuffer<float3> VertexBuffer;
+
+// Input constants
+int GridWidth;
+
+[numthreads(256, 1, 1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    uint index = id.x;
+    if (index >= GridWidth * GridWidth) return;
+
+    // Calculate grid coordinates
+    uint x = index % GridWidth;
+    uint y = index / GridWidth;
+
+    // Generate vertex position in world space
+    float3 position = float3(x, 0.0, y);
+
+    // Write to the output buffer
+    VertexBuffer[index] = position;
+}
