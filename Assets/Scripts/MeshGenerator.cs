@@ -43,8 +43,10 @@ public class MeshGenerator : MonoBehaviour
         generatedMesh.vertices = vertices;
 
         // Generate indices for a grid (triangle list)
-        int[] indices = new int[(gridWidth - 1) * (gridWidth - 1) * 6];
+        int quadCount = (gridWidth - 1) * (gridWidth - 1);
+        int[] indices = new int[quadCount * 6];
         int index = 0;
+
         for (int y = 0; y < gridWidth - 1; y++)
         {
             for (int x = 0; x < gridWidth - 1; x++)
@@ -65,12 +67,24 @@ public class MeshGenerator : MonoBehaviour
 
         generatedMesh.triangles = indices;
 
+        // Optional: Add a simple heightmap for visualization
+        Vector3[] debugVertices = new Vector3[vertices.Length];
+        for (int i = 0; i < vertices.Length; i++)
+        {
+            debugVertices[i] = vertices[i] + Vector3.up * Mathf.Sin(vertices[i].x * 0.1f); // Add a wave effect
+        }
+        generatedMesh.vertices = debugVertices;
+
+        // Recalculate normals and bounds
+        generatedMesh.RecalculateNormals();
+        generatedMesh.RecalculateBounds();
+
         // Apply the mesh to a MeshFilter
         MeshFilter meshFilter = gameObject.AddComponent<MeshFilter>();
         MeshRenderer meshRenderer = gameObject.AddComponent<MeshRenderer>();
         meshFilter.mesh = generatedMesh;
 
-        // Set a material (requires a material in your assets)
+        // Set a material
         meshRenderer.material = new Material(Shader.Find("Standard"));
     }
 
