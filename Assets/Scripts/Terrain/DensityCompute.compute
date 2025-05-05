@@ -1,0 +1,27 @@
+// DensityComputeShader.compute
+
+#pragma kernel CSMain
+
+// Texture output
+RWTexture3D<float> Result;
+
+// Input parameters
+float3 WorldScale; // Scale of the world, passed from the World class
+
+// Thread group sizes
+[numthreads(8, 8, 8)]
+void CSMain(uint3 id : SV_DispatchThreadID)
+{
+    // Get the dimensions of the 3D texture
+    uint width, height, depth;
+    Result.GetDimensions(width, height, depth);
+
+    // Compute normalized coordinates in the density texture
+    float3 uv = float3(id.x / (float)width, id.y / (float)height, id.z / (float)depth);
+
+    // Example: Procedural Perlin noise for density
+    float density = saturate(sin(uv.x * WorldScale.x) * sin(uv.y * WorldScale.y) * sin(uv.z * WorldScale.z));
+
+    // Write the density value to the texture
+    Result[id] = density;
+}
