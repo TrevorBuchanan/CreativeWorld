@@ -1,0 +1,33 @@
+#pragma kernel ChunkGen
+
+// Include the noise functions
+#include "Noise/SimplexNoise2D.compute"
+
+// Texture output
+RWTexture3D<float> Result;
+
+// Input parameters
+float3 WorldScale; // Scale of the world, passed from the World class
+float HeightScale; // Height scaling factor for noise sampling
+
+// Thread group sizes
+[numthreads(8, 8, 8)]
+void ChunkGen(uint3 id : SV_DispatchThreadID)
+{
+    // Get the dimensions of the 3D texture
+    uint width, height, depth;
+    Result.GetDimensions(width, height, depth);
+
+    // Compute normalized coordinates in the 3D texture
+    float3 uv = float3(id.x / (float)width, id.y / (float)height, id.z / (float)depth);
+
+    // Map the 3D position to 2D simplex noise
+    float2 noisePos = uv.xz * WorldScale.xz; // Use X and Z for 2D sampling
+    float noiseValue = snoise(noisePos) * 0.5 + 0.5; // Map noise to [0, 1]
+
+    // Determine if the voxel is solid or air
+    float density = (uv.y <= noiseValue * HeightScale) ? 1.0 : 0.0; // Solid below noise height, air above
+
+    // Write the density value to the texture
+    Result[id] = density; 
+}

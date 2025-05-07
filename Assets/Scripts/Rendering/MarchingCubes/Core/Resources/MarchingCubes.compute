@@ -38,23 +38,25 @@ int indexFromCoord(int3 coord) {
 
 float SampleDensity(uint3 coord)
 {
-	bool isEdge = any(coord <= 0 || coord >= densityMapSize - 1);
-	if (isEdge) return isoLevel;
-	float3 uvw = coord / (float3) (densityMapSize - 1);
-	return -DensityMap.SampleLevel(linearClampSampler, uvw, 0);
+    float result = isoLevel; // Default initialization
+    bool isEdge = any(coord <= 0 || coord >= densityMapSize - 1);
+    if (!isEdge) {
+        float3 uvw = coord / (float3)(densityMapSize - 1);
+        result = -DensityMap.SampleLevel(linearClampSampler, uvw, 0);
+    }
+    return result;
 }
 
 float3 calculateNormal(int3 coord) {
-	
-	int3 offsetX = int3(1, 0, 0);
-	int3 offsetY = int3(0, 1, 0);
-	int3 offsetZ = int3(0, 0, 1);
+    int3 offsetX = int3(1, 0, 0);
+    int3 offsetY = int3(0, 1, 0);
+    int3 offsetZ = int3(0, 0, 1);
 
-	float dx = SampleDensity(coord + offsetX) - SampleDensity(coord - offsetX);
-	float dy = SampleDensity(coord + offsetY) - SampleDensity(coord - offsetY);
-	float dz = SampleDensity(coord + offsetZ) - SampleDensity(coord - offsetZ);
+    float dx = SampleDensity(saturate(coord + offsetX)) - SampleDensity(saturate(coord - offsetX));
+    float dy = SampleDensity(saturate(coord + offsetY)) - SampleDensity(saturate(coord - offsetY));
+    float dz = SampleDensity(saturate(coord + offsetZ)) - SampleDensity(saturate(coord - offsetZ));
 
-	return normalize(float3(dx, dy, dz));
+    return normalize(float3(dx, dy, dz));
 }
 
 // Calculate the position of the vertex
@@ -68,7 +70,7 @@ Vertex createVertex(int3 coordA, int3 coordB) {
 	float densityB = SampleDensity(coordB);
 
 	// Interpolate between the two corner points based on the density
-	float t = (isoLevel - densityA) / (densityB - densityA);
+	float t = (densityB != densityA) ? (isoLevel - densityA) / (densityB - densityA) : 0.5f;
 	float3 position = posA + t * (posB - posA);
 
 	// Normal:

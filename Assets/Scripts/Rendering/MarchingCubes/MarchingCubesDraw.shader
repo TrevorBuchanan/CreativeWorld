@@ -1,4 +1,4 @@
-Shader "Fluid/MarchingCubesDraw"
+Shader "MarchingCubesDraw"
 {
 	Properties
 	{

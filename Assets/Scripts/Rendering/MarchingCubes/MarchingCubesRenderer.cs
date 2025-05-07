@@ -1,6 +1,6 @@
 using UnityEngine;
-using CreativeWorld.Helpers;
 using CreativeWorld.Terrain;
+using CreativeWorld.Helpers;
 
 namespace CreativeWorld.Rendering
 {
@@ -10,7 +10,7 @@ namespace CreativeWorld.Rendering
         public Color col;
 
         [Header("References")]
-        public World world;
+        public Chunk chunk;
         public Shader drawShader;
         public ComputeShader renderArgsCompute;
 
@@ -27,9 +27,9 @@ namespace CreativeWorld.Rendering
 
         void LateUpdate()
         {
-            if (world.DensityMap != null)
+            if (chunk.DensityMap != null)
             {
-                RenderDensities(world.DensityMap);
+                RenderDensities(chunk.DensityMap);
             }
         }
 
@@ -37,7 +37,7 @@ namespace CreativeWorld.Rendering
         void RenderDensities(RenderTexture densityTexture)
         {
             // Run marching cubes compute shader and get back buffer containing triangle data
-            triangleBuffer = marchingCubes.Run(densityTexture, world.Scale, -isoLevel);
+            triangleBuffer = marchingCubes.Run(densityTexture, chunk.Scale, -isoLevel);
 
             if (!drawMat) drawMat = new Material(drawShader);
             // Each triangle contains 3 vertices: assign these all to the vertex buffer on the draw material
@@ -71,6 +71,5 @@ namespace CreativeWorld.Rendering
             ComputeHelper.Release(renderArgs);
             marchingCubes.Release();
         }
-
     }
 }

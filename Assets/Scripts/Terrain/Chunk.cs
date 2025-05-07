@@ -1,17 +1,16 @@
 using System;
 using UnityEngine;
-using CreativeWorld.Helpers;
 
 namespace CreativeWorld.Terrain
 {
-    public class World : MonoBehaviour
+    public class Chunk : MonoBehaviour
     {
         [HideInInspector] public RenderTexture DensityMap;
         public Vector3 Scale => transform.localScale;
 
-        [Header("Density Map Settings")]
-        public int textureResolution = 256; // Resolution of the density map
-        public ComputeShader densityComputeShader;
+        [Header("Chunk Gen Settings")]
+        public int textureResolution = 256; // Resolution of the chunk map
+        public ComputeShader chunkGenComputeShader;
 
         private int kernelHandle;
 
@@ -34,31 +33,31 @@ namespace CreativeWorld.Terrain
                 DensityMap.Create();
             }
 
-            kernelHandle = densityComputeShader.FindKernel("CSMain");
+            kernelHandle = chunkGenComputeShader.FindKernel("ChunkGen");
 
             // Debug to check if the kernel was found
             if (kernelHandle < 0)
             {
-                Debug.LogError("Compute Shader Kernel 'CSMain' not found!");
+                Debug.LogError("Compute Shader Kernel 'ChunkGen' not found!");
             }
         }
 
 
         void UpdateDensityMap()
         {
-            if (densityComputeShader == null || DensityMap == null)
+            if (chunkGenComputeShader == null || DensityMap == null)
             {
-                Debug.LogError("Density Compute Shader or Density Map is not initialized.");
+                Debug.LogError("Chunk Gen Compute Shader or Density Map is not initialized.");
                 return;
             }
 
             // Bind the density map to the compute shader
-            densityComputeShader.SetTexture(kernelHandle, "Result", DensityMap);
-            densityComputeShader.SetVector("WorldScale", Scale);
+            chunkGenComputeShader.SetTexture(kernelHandle, "Result", DensityMap);
+            chunkGenComputeShader.SetVector("ChunkScale", Scale);
 
             // Dispatch the compute shader
             int threadGroups = Mathf.CeilToInt(textureResolution / 8.0f);
-            densityComputeShader.Dispatch(kernelHandle, threadGroups, threadGroups, threadGroups);
+            chunkGenComputeShader.Dispatch(kernelHandle, threadGroups, threadGroups, threadGroups);
         }
 
         private void OnDestroy()
